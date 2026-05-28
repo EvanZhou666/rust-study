@@ -1,2 +1,5 @@
 /hello_cargo/target/*
 /minigrep/target/*
+/**/target/*
+.idea/*
+.vscode/*
