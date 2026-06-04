@@ -18,8 +18,8 @@ use stock::{Candle, SinaProvider, StockQuote};
 fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([300.0, 122.0])
-            .with_min_inner_size([280.0, 122.0])
+            .with_inner_size([250.0, 96.0])
+            .with_min_inner_size([230.0, 96.0])
             .with_always_on_top()
             .with_decorations(false)
             .with_transparent(true),
@@ -188,23 +188,23 @@ impl eframe::App for StockMonitorApp {
                 egui::Frame::none()
                     .fill(Color32::from_rgba_unmultiplied(22, 24, 28, 232))
                     .stroke(Stroke::new(1.0, Color32::from_rgb(64, 70, 78)))
-                    .rounding(8.0)
-                    .inner_margin(egui::Margin::same(10.0)),
+                    .rounding(6.0)
+                    .inner_margin(egui::Margin::same(7.0)),
             )
             .show(ctx, |ui| {
                 let hovered = ui.rect_contains_pointer(ui.max_rect());
                 if hovered {
-                    ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize([440.0, 352.0].into()));
+                    ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize([360.0, 286.0].into()));
                 } else {
-                    ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize([300.0, 122.0].into()));
+                    ctx.send_viewport_cmd(egui::ViewportCommand::InnerSize([250.0, 96.0].into()));
                 }
 
                 self.show_title_bar(ui, ctx);
-                ui.add_space(4.0);
+                ui.add_space(2.0);
                 self.show_quote(ui);
 
                 if hovered {
-                    ui.add_space(8.0);
+                    ui.add_space(5.0);
                     self.show_chart(ui);
                     ui.separator();
                     self.show_manager(ui);
@@ -216,15 +216,15 @@ impl eframe::App for StockMonitorApp {
 impl StockMonitorApp {
     fn show_title_bar(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
         ui.horizontal(|ui| {
-            let drag_width = (ui.available_width() - 30.0).max(80.0);
+            let drag_width = (ui.available_width() - 24.0).max(80.0);
             let (rect, response) =
-                ui.allocate_exact_size(Vec2::new(drag_width, 24.0), Sense::click_and_drag());
+                ui.allocate_exact_size(Vec2::new(drag_width, 19.0), Sense::click_and_drag());
 
             ui.painter().text(
                 rect.left_center(),
                 egui::Align2::LEFT_CENTER,
-                "A 股悬浮看板",
-                egui::FontId::proportional(13.0),
+                "",
+                egui::FontId::proportional(11.0),
                 Color32::from_rgb(180, 188, 198),
             );
 
@@ -233,8 +233,12 @@ impl StockMonitorApp {
             }
 
             let close = ui.add_sized(
-                [24.0, 24.0],
-                egui::Button::new(RichText::new("x").color(Color32::from_rgb(220, 226, 232))),
+                [19.0, 19.0],
+                egui::Button::new(
+                    RichText::new("x")
+                        .color(Color32::from_rgb(220, 226, 232))
+                        .size(10.0),
+                ),
             );
             if close.clicked() {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);
@@ -251,25 +255,25 @@ impl StockMonitorApp {
         if let Some(quote) = self.quotes.get(symbol) {
             let up = quote.change() >= 0.0;
             let color = if up {
-                Color32::from_rgb(236, 86, 86)
+                Color32::from_rgb(214, 154, 96)
             } else {
-                Color32::from_rgb(72, 188, 125)
+                Color32::from_rgb(118, 160, 188)
             };
 
             ui.horizontal(|ui| {
                 ui.label(
                     RichText::new(&quote.name)
                         .color(Color32::WHITE)
-                        .size(18.0)
+                        .size(13.0)
                         .strong(),
                 );
-                ui.label(RichText::new(&quote.symbol).color(Color32::GRAY).size(12.0));
+                ui.label(RichText::new(&quote.symbol).color(Color32::GRAY).size(10.0));
             });
             ui.horizontal(|ui| {
                 ui.label(
                     RichText::new(format!("{:.2}", quote.price))
                         .color(color)
-                        .size(24.0)
+                        .size(13.0) // 股票价格字体大小
                         .strong(),
                 );
                 ui.label(
@@ -279,7 +283,7 @@ impl StockMonitorApp {
                         quote.change_percent()
                     ))
                     .color(color)
-                    .size(15.0),
+                    .size(12.0),
                 );
             });
             ui.label(
@@ -294,11 +298,15 @@ impl StockMonitorApp {
                     format_large(quote.amount)
                 ))
                 .color(Color32::GRAY)
-                .size(11.0),
+                .size(9.0),
             );
         } else {
-            ui.label(RichText::new(symbol).color(Color32::WHITE).size(18.0));
-            ui.label(RichText::new("正在获取新浪行情...").color(Color32::GRAY));
+            ui.label(RichText::new(symbol).color(Color32::WHITE).size(13.0));
+            ui.label(
+                RichText::new("正在获取新浪行情...")
+                    .color(Color32::GRAY)
+                    .size(10.0),
+            );
         }
     }
 
@@ -327,11 +335,15 @@ impl StockMonitorApp {
                         format_large(last.volume as f64)
                     ))
                     .color(Color32::GRAY)
-                    .size(11.0),
+                    .size(9.0),
                 );
             }
         } else {
-            ui.label(RichText::new("正在加载当日 K 线...").color(Color32::GRAY));
+            ui.label(
+                RichText::new("正在加载当日 K 线...")
+                    .color(Color32::GRAY)
+                    .size(10.0),
+            );
         }
     }
 
@@ -359,7 +371,7 @@ impl StockMonitorApp {
             ui.label(
                 RichText::new(error)
                     .color(Color32::from_rgb(255, 172, 72))
-                    .size(11.0),
+                    .size(9.0),
             );
         }
     }
@@ -453,7 +465,7 @@ fn configure_chinese_fonts(ctx: &egui::Context) {
 }
 
 fn draw_candles(ui: &mut egui::Ui, candles: &[Candle]) {
-    let desired_size = Vec2::new(ui.available_width(), 140.0);
+    let desired_size = Vec2::new(ui.available_width(), 108.0);
     let (rect, _) = ui.allocate_exact_size(desired_size, Sense::hover());
     let painter = ui.painter_at(rect);
 
@@ -490,9 +502,9 @@ fn draw_candles(ui: &mut egui::Ui, candles: &[Candle]) {
         let low_y = to_y(candle.low);
         let rising = candle.close >= candle.open;
         let color = if rising {
-            Color32::from_rgb(236, 86, 86)
+            Color32::from_rgb(214, 154, 96)
         } else {
-            Color32::from_rgb(72, 188, 125)
+            Color32::from_rgb(118, 160, 188)
         };
 
         painter.line_segment(
@@ -514,14 +526,14 @@ fn draw_candles(ui: &mut egui::Ui, candles: &[Candle]) {
         rect.left_top() + Vec2::new(6.0, 5.0),
         egui::Align2::LEFT_TOP,
         format!("{max_price:.2}"),
-        egui::FontId::monospace(10.0),
+        egui::FontId::monospace(9.0),
         Color32::GRAY,
     );
     painter.text(
         rect.left_bottom() + Vec2::new(6.0, -16.0),
         egui::Align2::LEFT_TOP,
         format!("{min_price:.2}"),
-        egui::FontId::monospace(10.0),
+        egui::FontId::monospace(9.0),
         Color32::GRAY,
     );
 }
