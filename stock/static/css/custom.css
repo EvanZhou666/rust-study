@@ -1,0 +1,6 @@
+.htmx-indicator{display:none}
+.htmx-request .htmx-indicator{display:inline-block}
+.htmx-request.htmx-indicator{display:inline-block}
+body{background-color:#f8f9fa}
+.table td,.table th{white-space:nowrap}
+canvas#priceChart{max-height:350px}

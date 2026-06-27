@@ -1,0 +1,47 @@
+<table class="table table-striped table-hover mb-0">
+    <thead class="table-light">
+        <tr>
+            <th>日期</th>
+            <th>价格</th>
+            <th>涨跌</th>
+            <th>涨跌幅</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in prices | reverse %}
+        <tr>
+            <td>{{ p.date }}</td>
+            <td>{{ p.price }} {{ unit }}</td>
+            <td>
+                {% if p.change is number %}
+                    {% if p.change > 0 %}
+                        <span class="text-success">+{{ p.change }}</span>
+                    {% elif p.change < 0 %}
+                        <span class="text-danger">{{ p.change }}</span>
+                    {% else %}
+                        <span class="text-muted">0</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">--</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if p.change_percent is number %}
+                    {% if p.change_percent > 0 %}
+                        <span class="text-success">+{{ p.change_percent }}%</span>
+                    {% elif p.change_percent < 0 %}
+                        <span class="text-danger">{{ p.change_percent }}%</span>
+                    {% else %}
+                        <span class="text-muted">0%</span>
+                    {% endif %}
+                {% else %}
+                    <span class="text-muted">--</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if prices | length == 0 %}
+<div class="text-center text-muted py-4">暂无数据，请先点击「刷新数据」采集</div>
+{% endif %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock title %}
+{% block content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">看板</a></li>
+        <li class="breadcrumb-item active">{{ commodity_name }}</li>
+    </ol>
+</nav>
+
+<h1 class="h3 mb-4">{{ commodity_name }} <small class="text-muted fs-6">{{ unit }}</small></h1>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title text-muted">趋势方向</h6>
+                <p class="card-text fs-4 fw-bold">{{ trend_direction }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title text-muted">连续天数</h6>
+                <p class="card-text fs-4 fw-bold">{{ trend_consecutive }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title text-muted">区间涨跌</h6>
+                <p class="card-text fs-4 fw-bold">{{ trend_change }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title text-muted">5日均价</h6>
+                <p class="card-text fs-5">{{ trend_short_ma }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title text-muted">20日均价</h6>
+                <p class="card-text fs-5">{{ trend_medium_ma }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <canvas id="priceChart" height="300"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">历史价格</span>
+        <button class="btn btn-outline-primary btn-sm"
+                hx-get="/api/commodity/{{ commodity_code }}/prices"
+                hx-target="#price-table"
+                hx-swap="innerHTML">
+            刷新
+        </button>
+    </div>
+    <div class="card-body p-0" id="price-table">
+        {% include "partials/price_table.html" %}
+    </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+fetch('/api/commodity/{{ commodity_code }}/chart')
+    .then(r => r.json())
+    .then(data => {
+        new Chart(document.getElementById('priceChart'), {
+            type: 'line',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    label: '{{ commodity_name }} ({{ unit }})',
+                    data: data.prices,
+                    borderColor: 'rgb(13,110,253)',
+                    backgroundColor: 'rgba(13,110,253,0.1)',
+                    fill: true,
+                    tension: 0.1,
+                    pointRadius: 1,
+                    pointHitRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { display: true },
+                    y: { beginAtZero: false }
+                }
+            }
+        });
+    });
+</script>
+{% endblock scripts %}

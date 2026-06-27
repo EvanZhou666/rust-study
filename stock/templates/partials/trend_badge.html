@@ -1,0 +1,7 @@
+{% if trend_direction == "上涨" %}
+<span class="badge bg-danger">↑ 上涨</span>
+{% elif trend_direction == "下跌" %}
+<span class="badge bg-success">↓ 下跌</span>
+{% else %}
+<span class="badge bg-secondary">→ 震荡</span>
+{% endif %}
