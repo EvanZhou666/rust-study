@@ -81,6 +81,7 @@ impl ZhuJiaScraper {
         if results.is_empty() {
             Err(anyhow!("未能在猪价网找到任何商品价格数据"))
         } else {
+            tracing::info!("获取生猪/玉米/豆粕价格{:#?}", results);
             Ok(results)
         }
     }

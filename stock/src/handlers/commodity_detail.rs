@@ -59,6 +59,10 @@ pub async fn commodity_detail(
     let rendered = state.tera.render("commodity_detail.html", &Context::from_serialize(&ctx).unwrap());
     match rendered {
         Ok(html) => Html(html).into_response(),
-        Err(e) => Html(format!("<h1>Render Error</h1><pre>{}</pre>", e)).into_response(),
+        Err(e) => { 
+            tracing::error!("Render error: {:#}", e);
+            Html(format!("<h1>Render Error</h1><pre>{:#}</pre>", e)).into_response() 
+        },
     }
 }
+
