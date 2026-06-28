@@ -9,8 +9,8 @@ User=stock
 Group=stock
 
 # 将 /path/to/stock 替换为实际部署路径
-WorkingDirectory=/opt/stock
-ExecStart=/opt/stock/stock
+WorkingDirectory=/home/stock
+ExecStart=/home/stock/stock
 
 # 自动重启
 Restart=on-failure
@@ -24,7 +24,7 @@ StandardError=journal
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths=/opt/stock/data
+ReadWritePaths=/home/stock/data
 
 [Install]
 WantedBy=multi-user.target

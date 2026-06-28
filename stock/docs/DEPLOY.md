@@ -156,34 +156,61 @@ sudo systemctl restart stock
 
 ## 三、Nginx 反向代理（可选，生产环境建议）
 
+`ssl_certificate` 不要指向 `*_chain.pem`，要指向 `server.pem + chain.pem` 合成后的 fullchain 文件
+
+先在服务器执行：
+
+```bash
+cd /etc/letsencrypt/live/v.qianlima.site
+
+sudo cat scs1782638325334_v.qianlima.site_server.pem \
+  scs1782638325334_v.qianlima.site_chain.pem \
+  | sudo tee scs1782638325334_v.qianlima.site_fullchain.pem > /dev/null
+```
+
+然后 nginx 配置改成这样：
+
 ```nginx
-# /etc/nginx/sites-available/stock
 server {
-    listen 80;
-    server_name your-domain.com;
+    listen 443 ssl;
+    server_name v.qianlima.site;
+
+    ssl_certificate /etc/letsencrypt/live/v.qianlima.site/scs1782638325334_v.qianlima.site_fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/v.qianlima.site/scs1782638325334_v.qianlima.site_private_key.pem;
+
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     location / {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://localhost:30001;
+        proxy_http_version 1.1;
+
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
 }
 ```
 
+如果还需要 HTTP 自动跳 HTTPS，再加一个 80 端口配置：
+
+```nginx
+server {
+    listen 80;
+    server_name v.qianlima.site;
+
+    return 301 https://$host$request_uri;
+}
+```
+
+最后执行：
+
 ```bash
-sudo ln -s /etc/nginx/sites-available/stock /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-如需 HTTPS，可使用 Certbot 自动申请 Let's Encrypt 证书：
-
-```bash
-sudo apt install certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com
-```
 
 ---
 
