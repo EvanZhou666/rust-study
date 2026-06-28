@@ -33,7 +33,7 @@ async fn main() {
         .nest_service("/static", ServeDir::new("static"))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3001").await.unwrap();
-    tracing::info!("Server started: http://localhost:3001");
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:30001").await.unwrap();
+    tracing::info!("Server started: http://localhost:30001");
     axum::serve(listener, router).await.unwrap();
 }
