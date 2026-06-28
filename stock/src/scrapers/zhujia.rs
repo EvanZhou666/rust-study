@@ -20,48 +20,66 @@ impl ZhuJiaScraper {
         }
     }
 
-    pub fn parse_zhujia_all(&self, html: &str) -> Result<Vec<CommodityPrice>> {
+    // 解析全国汇总价格卡片：ul.zhujia-hd > li[title="..."]
+    // 每张卡片：<span>名称</span> <b>价格</b> <i><span>涨跌额元</span>/单位</i>
+    pub fn parse_zhujia_cards(&self, html: &str) -> Result<Vec<CommodityPrice>> {
         let document = Html::parse_document(html);
         let today = Local::now().format("%Y-%m-%d").to_string();
         let mut results = Vec::new();
 
-        let tr_sel = Selector::parse("table tbody tr")
-            .map_err(|e| anyhow!("CSS error: {}", e))?;
-        let td_sel = Selector::parse("td")
-            .map_err(|e| anyhow!("CSS error: {}", e))?;
+        // 选中价格卡片列表中的每个 <li>，每张卡片代表一个商品（外三元/玉米/豆粕）
+        let li_sel = Selector::parse("ul.zhujia-hd li").map_err(|e| anyhow!("CSS error: {}", e))?;
+        // 选中卡片内的 <b> 标签，里面是价格数值，如 <b class="red">9.52</b>
+        let b_sel = Selector::parse("b").map_err(|e| anyhow!("CSS error: {}", e))?;
+        // 选中 <i> 下的 <span>，里面是涨跌额文字，如 <span class="red">0.05元</span> 或 <span>报价平稳</span>
+        let i_span_sel = Selector::parse("i > span").map_err(|e| anyhow!("CSS error: {}", e))?;
 
-        for row in document.select(&tr_sel) {
-            let cells: Vec<_> = row.select(&td_sel).collect();
-            if cells.len() < 3 {
-                continue;
-            }
-            let name_text = cells[0].text().collect::<String>();
-            let price_text = cells[1].text().collect::<String>().trim().to_string();
-
-            let (commodity_name, commodity_unit) = if name_text.contains("生猪") {
-                ("生猪", "元/公斤")
-            } else if name_text.contains("玉米") {
-                ("玉米", "元/吨")
-            } else if name_text.contains("豆粕") {
-                ("豆粕", "元/吨")
-            } else {
-                continue;
+        for li in document.select(&li_sel) {
+            let title = match li.value().attr("title") {
+                Some(t) => t.to_string(),
+                None => continue,
             };
 
-            if let Ok(price) = price_text.parse::<f64>() {
-                results.push(CommodityPrice {
-                    date: today.clone(),
-                    name: commodity_name.to_string(),
-                    price,
-                    unit: commodity_unit.to_string(),
-                    change: None,
-                    change_percent: None,
+            let (commodity_name, commodity_unit) = match title.as_str() {
+                "外三元" => ("生猪", "元/公斤"),
+                "玉米" => ("玉米", "元/吨"),
+                "豆粕" => ("豆粕", "元/吨"),
+                _ => continue,
+            };
+
+            let price_text = match li.select(&b_sel).next() {
+                Some(el) => el.text().collect::<String>().trim().to_string(),
+                None => continue,
+            };
+            let price: f64 = match price_text.parse() {
+                Ok(p) => p,
+                Err(_) => continue,
+            };
+
+            let change: Option<f64> = li
+                .select(&i_span_sel)
+                .next()
+                .and_then(|el| {
+                    let t = el.text().collect::<String>();
+                    let cleaned: String = t
+                        .chars()
+                        .filter(|c| c.is_ascii_digit() || *c == '.' || *c == '-')
+                        .collect();
+                    cleaned.parse::<f64>().ok()
                 });
-            }
+
+            results.push(CommodityPrice {
+                date: today.clone(),
+                name: commodity_name.to_string(),
+                price,
+                unit: commodity_unit.to_string(),
+                change,
+                change_percent: None,
+            });
         }
 
         if results.is_empty() {
-            Err(anyhow!("未能在猪价网找到任何商品价格数据，请检查 CSS 选择器"))
+            Err(anyhow!("未能在猪价网找到任何商品价格数据"))
         } else {
             Ok(results)
         }
@@ -73,13 +91,8 @@ impl Scraper for ZhuJiaScraper {
     async fn fetch(&self, config: &CommodityConfig) -> Result<Vec<CommodityPrice>> {
         let resp = self.client.get(&config.url).send().await?;
         let html = resp.text().await?;
-        let all = self.parse_zhujia_all(&html)?;
-        let filtered: Vec<_> = all.into_iter().filter(|p| p.name == config.name).collect();
-        if filtered.is_empty() {
-            Err(anyhow!("未找到 {} 的价格数据", config.name))
-        } else {
-            Ok(filtered)
-        }
+        // 一次抓取返回页面上所有商品价格，由 scheduler 按 name 分发
+        self.parse_zhujia_cards(&html)
     }
 
     fn source(&self) -> &str {

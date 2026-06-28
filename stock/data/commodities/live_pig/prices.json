@@ -1,0 +1,17 @@
+{
+  "commodity": {
+    "name": "生猪",
+    "code": "live_pig",
+    "unit": "元/公斤"
+  },
+  "prices": [
+    {
+      "date": "2026-06-28",
+      "name": "生猪",
+      "price": 9.52,
+      "unit": "元/公斤",
+      "change": 0.05
+    }
+  ],
+  "last_updated": "2026-06-28T10:32:06+08:00"
+}

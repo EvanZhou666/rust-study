@@ -1,0 +1,16 @@
+{
+  "commodity": {
+    "name": "豆粕",
+    "code": "soybean_meal",
+    "unit": "元/吨"
+  },
+  "prices": [
+    {
+      "date": "2026-06-28",
+      "name": "豆粕",
+      "price": 2834.0,
+      "unit": "元/吨"
+    }
+  ],
+  "last_updated": "2026-06-28T10:32:06+08:00"
+}

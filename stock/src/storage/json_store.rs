@@ -64,6 +64,13 @@ impl Storage for JsonStore {
             }
         }
         store.prices.sort_by(|a, b| a.date.cmp(&b.date));
+
+        // 用最新一条价格数据刷新元数据
+        if let Some(latest) = store.prices.last() {
+            store.commodity.name = latest.name.clone();
+            store.commodity.unit = latest.unit.clone();
+        }
+
         store.last_updated = Local::now().format("%Y-%m-%dT%H:%M:%S%:z").to_string();
         self.save_store(&store).await
     }

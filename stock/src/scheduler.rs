@@ -42,6 +42,7 @@ pub async fn run_scheduler(state: Arc<AppState>) {
 
 pub async fn collect_all(state: &Arc<AppState>) {
     tracing::info!("Collecting all commodity data...");
+    // 生猪，玉米，豆粕价格
     let zhujia_cfgs: Vec<_> = state.configs.iter().filter(|c| c.source == "zhujia").collect();
     let ppi_cfgs: Vec<_> = state.configs.iter().filter(|c| c.source == "ppi").collect();
 

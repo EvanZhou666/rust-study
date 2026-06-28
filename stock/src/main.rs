@@ -17,6 +17,7 @@ async fn main() {
     tracing_subscriber::fmt::init();
 
     let state = Arc::new(AppState::new("data/commodities"));
+    // 增加引用计数，并非数据拷贝
     let scheduler_state = state.clone();
 
     tokio::spawn(async move {

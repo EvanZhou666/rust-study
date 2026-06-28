@@ -24,7 +24,7 @@ impl PpiScraper {
         let document = Html::parse_document(html);
         let today = Local::now().format("%Y-%m-%d").to_string();
 
-        // 尝试常见的历史价格表格选择器
+        // 生意社页面常见的历史价格表格选择器，依次尝试
         let selectors_to_try = [
             "table.history-table tbody tr",
             "table.price-table tbody tr",
@@ -41,7 +41,7 @@ impl PpiScraper {
 
             if let Some(element) = document.select(&selector).next() {
                 let text = element.text().collect::<String>().trim().to_string();
-                // 尝试提取数字
+                // 提取数字
                 let cleaned: String = text
                     .chars()
                     .filter(|c| c.is_ascii_digit() || *c == '.' || *c == '-')
