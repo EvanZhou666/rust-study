@@ -27,14 +27,14 @@ pub fn default_commodities() -> Vec<CommodityConfig> {
             name: "钛白粉".into(),
             code: "titanium_dioxide".into(),
             source: "ppi".into(),
-            url: "https://m1.100ppi.com/Rawmex/427.html".into(),
+            url: "https://m1.100ppi.com/Rawmex/645.html".into(),
             unit: "元/吨".into(),
         },
         CommodityConfig {
             name: "硫磺".into(),
             code: "sulfur".into(),
             source: "ppi".into(),
-            url: "https://m1.100ppi.com/Rawmex/645.html".into(),
+            url: "https://m1.100ppi.com/Rawmex/427.html".into(),
             unit: "元/吨".into(),
         },
     ]
